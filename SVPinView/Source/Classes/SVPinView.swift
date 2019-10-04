@@ -57,7 +57,7 @@ public class SVPinView: UIView {
     public var keyboardType:UIKeyboardType = UIKeyboardType.phonePad
     public var becomeFirstResponderAtIndex:Int? = nil
     public var isContentTypeOneTimeCode:Bool = true
-    public var shouldDismissKeyboardOnEmptyFirstField:Bool = false
+    public var shouldDismissKeyboardOnEmptyFirstField:Bool = true
     public var pinInputAccessoryView:UIView? {
         didSet { refreshPinView() }
     }
@@ -307,6 +307,9 @@ extension SVPinView : UICollectionViewDataSource, UICollectionViewDelegate, UICo
         if #available(iOS 12.0, *), indexPath.row == 0, isContentTypeOneTimeCode {
             textField.textContentType = .oneTimeCode
         }
+        else if #available(iOS 10.0, *) {
+            textField.textContentType = .telephoneNumber
+        }
         textField.keyboardType = self.keyboardType
         textField.inputAccessoryView = self.pinInputAccessoryView
         
@@ -396,7 +399,12 @@ extension SVPinView : UITextFieldDelegate
     public func textFieldDidEndEditing(_ textField: UITextField) {
         let containerView = textField.superview?.viewWithTag(51)!
         let underLine = textField.superview?.viewWithTag(50)!
-        self.stylePinField(containerView: containerView!, underLine: underLine!, isActive: false)
+        var isActive = false
+        if let txt = textField.text, !txt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            isActive = true
+        }
+        self.stylePinField(containerView: containerView!, underLine: underLine!, isActive: isActive)
+        
     }
     
     public func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
